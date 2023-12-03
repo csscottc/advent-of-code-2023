@@ -4,7 +4,8 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-  "unicode"
+	"strconv"
+	"unicode"
 )
 
 func main() {
@@ -16,6 +17,8 @@ func main() {
 
 	reader := bufio.NewReader(file)
 
+	var calibrationValues []int
+
 	for {
 		line, err := reader.ReadString('\n')
 		if err != nil {
@@ -25,22 +28,36 @@ func main() {
 			break
 		}
 		calibrationValue := getCalibrationValue(line)
-		fmt.Println(calibrationValue);
+		num, err := strconv.Atoi(calibrationValue)
+
+		if err != nil {
+			fmt.Println(err)
+		}
+		calibrationValues = append(calibrationValues, num)
 	}
+	fmt.Println(sumCalibrationValues(calibrationValues))
+}
+
+func sumCalibrationValues(cvalues []int) int {
+	var total = 0
+	for _, val := range cvalues {
+		total += val
+	}
+	return total
 }
 
 func getCalibrationValue(line string) string {
-  var first rune;
-  var last rune;
-	for _,rv := range line {
-    //fmt.Printf("%c %b \n", rv,unicode.IsDigit(rune(rv)))
-    if unicode.IsDigit(rune(rv)) {
-      if first == 0 {
-        first = rv;
-      }
-      last = rv;
-    }
+	var first rune
+	var last rune
+	var firstAssigned = false
+	for _, rv := range line {
+		if unicode.IsDigit(rune(rv)) {
+			if firstAssigned == false {
+				first = rv
+				firstAssigned = true
+			}
+			last = rv
+		}
 	}
-  // fmt.Printf("first:%c last:%c \n", first, last);
-	return fmt.Sprintf("%c%c", first, last);
+	return fmt.Sprintf("%c%c", first, last)
 }
