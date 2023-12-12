@@ -19,6 +19,7 @@ func main() {
 	reader := bufio.NewReader(file)
 
   var total int
+  var sumPower int
   var games []*Game 
 
   for {
@@ -46,9 +47,15 @@ func main() {
     if possibleGame {
       total += game.id
     }
+
+    lpRound := game.lpRound()
+    power := lpRound.red * lpRound.green * lpRound.blue
+    sumPower += power
   }
 
+
   fmt.Printf("(Part 1) The total is %d\n", total)
+  fmt.Printf("(Part 2) The total power is %d\n", sumPower)
   
 
 }
@@ -56,6 +63,30 @@ func main() {
 type Game struct {
   id int
   rounds []*Round
+}
+
+func (g *Game) lpRound() *Round {
+  var highestRed int = 0
+  var highestBlue int = 0
+  var highestGreen int = 0
+  for _, v := range g.rounds {
+    if (v.red > highestRed) {
+      highestRed = v.red
+    }
+    if (v.blue > highestBlue) {
+      highestBlue = v.blue
+    }
+    if (v.green > highestGreen) {
+      highestGreen = v.green
+    }
+  }
+
+  return &Round{
+    red: highestRed,
+    blue: highestBlue,
+    green: highestGreen,
+  }
+
 }
 
 func (r *Round) isPossible() bool {
