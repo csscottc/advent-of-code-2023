@@ -19,7 +19,8 @@ func main() {
 	reader := bufio.NewReader(file)
 
   var total int
-	
+  var games []*Game 
+
   for {
 		line, err := reader.ReadString('\n')
     if err != nil {
@@ -28,26 +29,33 @@ func main() {
 			}
 			break
 		}
-    game, rounds := ParseLine(line)
+    games = append(games,ParseLine(line))
+    
+  }
+
+  for _, game := range games {
     var possibleGame bool = false
-    for _, round := range rounds {
-      d := ParseRound(round).isPossible()
+    for _, round := range game.rounds {
+      d := round.isPossible()
       if d == false {
         possibleGame = false
         break;
       }
       possibleGame = true
     } 
-
-    // var possibleGameIds []int = make([]int, 5)
-    fmt.Printf("%d is possible: %t\n", game, possibleGame)
     if possibleGame {
-      total += game
-      //possibleGameIds = append(possibleGameIds, game)
+      total += game.id
     }
-    fmt.Printf("%d\n",total)
-    
   }
+
+  fmt.Printf("(Part 1) The total is %d\n", total)
+  
+
+}
+
+type Game struct {
+  id int
+  rounds []*Round
 }
 
 func (r *Round) isPossible() bool {
@@ -97,13 +105,13 @@ func ParseRound(round string) *Round {
   return parsedRound
 }
 
-func ParseLine(line string) (int, []string) {
+func ParseLine(line string) *Game {
   gametag := strings.Split(line, ":")[0]
   rounds := strings.Split(strings.Split(line, ":")[1], ";")
-  for i, val := range rounds {
-    strings.Trim(val," ")
-    rounds[i] = strings.Trim(val," ") 
+  var pRounds []*Round
+  for _, val := range rounds {
+    pRounds = append(pRounds, ParseRound(strings.Trim(val," ")))
   }
   gameId, _ := strconv.Atoi(strings.Split(gametag," ")[1])
-  return gameId, rounds
+  return &Game { id: gameId, rounds: pRounds }
 }

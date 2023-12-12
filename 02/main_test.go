@@ -4,12 +4,16 @@ import (
   "testing"
 )
 
-func compareSlices[T comparable](slice1, slice2 []T) bool {
+func roundsEqual(a, b *Round) bool {
+    return a.green == b.green && a.red == b.red && a.blue == b.blue
+}
+
+func slicesRoundsEqual(slice1, slice2 []*Round) bool {
     if len(slice1) != len(slice2) {
-        return false
+        return false // Slices of different lengths are not equal
     }
     for i := range slice1 {
-        if slice1[i] != slice2[i] {
+        if !roundsEqual(slice1[i], slice2[i]) {
             return false
         }
     }
@@ -19,24 +23,25 @@ func compareSlices[T comparable](slice1, slice2 []T) bool {
 func TestParseLine(t *testing.T) {
   tests := []struct {
     line string
-    wantGameId string
-    wantRounds []string 
+    wantGameId int
+    wantRounds []*Round 
   } {
     {
       line: "Game 1: 3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green",
-      wantRounds: []string{"3 blue, 4 red", "1 red, 2 green, 6 blue", "2 green"},
+      wantRounds: []*Round{{blue:3, red: 4, green: 0}, {red: 1, green: 2, blue:6 }, {green: 2, blue: 0, red: 0},},
+      // []string{"3 blue, 4 red", "1 red, 2 green, 6 blue", "2 green"},
       wantGameId: 1,
     },
   }
 
   for _, tt := range tests {
     t.Run(tt.line, func(t *testing.T) {
-      gotGameId, gotRounds := ParseLine(tt.line)
-      if gotGameId != tt.wantGameId {
-        t.Errorf("Gametag mismatch got: %s  want: %s", gotGameId, tt.wantGameId)
+      game := ParseLine(tt.line)
+      if game.id != tt.wantGameId {
+        t.Errorf("Gametag mismatch got: %d want: %d", game.id, tt.wantGameId)
       }
-      if !compareSlices(gotRounds, tt.wantRounds) {
-        t.Errorf("gotRounds didn't match wantRounds want: '%+v' got: '%+v'", tt.wantRounds, gotRounds)
+      if !slicesRoundsEqual(game.rounds, tt.wantRounds) {
+        t.Errorf("rounds didn't match wantRounds want: '%+v' got: '%+v'", tt.wantRounds, game.rounds)
       }
     })
   }
